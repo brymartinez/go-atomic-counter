@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 awslocal dynamodb create-table \
     --table-name IDGenerator-local \
     --key-schema AttributeName=IDSequence,KeyType=HASH \

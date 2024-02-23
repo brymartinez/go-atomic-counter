@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -9,6 +10,12 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
+
+func printMap(m map[string]types.AttributeValue) {
+	for key, value := range m {
+		fmt.Printf("%s: %v\n", key, value)
+	}
+}
 
 func main() {
 	var ctx context.Context
@@ -24,27 +31,32 @@ func main() {
 
 	client := dynamodb.NewFromConfig(cfg)
 
-	updateField := "Refrigerator"
+	updateField := "Living Room"
 	// Define the parameters for the update operation
 	input := &dynamodb.UpdateItemInput{
 		TableName: aws.String("IDGenerator-local"),
 		Key: map[string]types.AttributeValue{
-			"YourPartitionKey": &types.AttributeValueMemberS{
+			"IDSequence": &types.AttributeValueMemberS{
 				Value: "IDSequence",
 			},
 		},
-		UpdateExpression: aws.String("SET" + updateField + " = " + updateField + ":value"),
+		UpdateExpression: aws.String("SET #attrName = #attrName + :value"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":value": &types.AttributeValueMemberN{
 				Value: "1",
 			},
 		},
+		ExpressionAttributeNames: map[string]string{
+			"#attrName": updateField,
+		},
 		ReturnValues: types.ReturnValueAllNew,
 	}
 
-	_, err = client.UpdateItem(context.Background(), input)
+	output, err := client.UpdateItem(context.Background(), input)
 	if err != nil {
 		log.Fatalf("Got error calling UpdateItem: %s", err)
+	} else {
+		printMap(output.Attributes)
 	}
 
 }
