@@ -18,9 +18,9 @@ func printMap(m map[string]types.AttributeValue) {
 }
 
 func main() {
-	var ctx context.Context
+
 	cfg, err := config.LoadDefaultConfig(
-		ctx,
+		context.Background(),
 		config.WithRegion("ap-southeast-1"),
 		config.WithEndpointResolverWithOptions(aws.EndpointResolverWithOptionsFunc(
 			func(service, region string, options ...interface{}) (aws.Endpoint, error) {
@@ -28,6 +28,10 @@ func main() {
 			}),
 		),
 	)
+
+	if err != nil {
+		panic("Cannot instantiate AWS connection.")
+	}
 
 	client := dynamodb.NewFromConfig(cfg)
 
